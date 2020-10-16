@@ -1,12 +1,61 @@
 import socket
+import select
+
+HEADER_LENGTH = 10  # define max header length
+IP = "127.0.0.1"  # define ip constant
+PORT = 1234  # define port constant
+
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # socket
+server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+server_socket.bind((IP, PORT))
+server_socket.listen()  # tell the server to listen for collections
 
 
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # define socket variable and socket type
-s.bind((socket.gethostname(),1234)) # bind socket to the host and port
-s.listen(5)  # listen will accept an integer that will define the max connections
+sockets_list = [server_socket]
+
+clients = {}
+
+
+def receive_message(client_socket):
+    try:
+        message_header = client_socket.recv(HEADER_LENGTH)
+
+        if not len(message_header):
+            return False
+        
+        message_length = int(message_header.decode("utf-8"))
+
+        return {"header": message_header, "data": client_socket.recv(message_length)}
+
+    except:
+        pass
 
 
 while True:
-    client, address = s.accept()
-    print(f"Connection from {address} has been accepted!")
-    client.send(bytes("Welome to lo.", encoding="utf-8"))
+    read_sockets, _, exception_sockets = select.select(sockets_list, [], sockets_list)  # select accepts three parametes. read_list, write_list, exception_list
+
+    for notified_socket in read_sockets:
+        if notified_socket == server_socket:  # IF notified_socket == server_socket, somebody has connected to the socket and we must either accept or process exception
+            client_socket, client_address = server_socket.accept()
+
+
+            user = receive_message(client_socket)
+            if user = False:
+                continue
+
+            sockets_list.append(client_socket)
+            clients[client_socket] = user
+
+            print(f"Accepted new connection form {client_address[0]}: {client_address[1]} username: {user['data'].decode('utf-8')}")
+
+        else:
+            message = receive_message(notified_socket)
+
+            if message is False:
+                print(f"Closed connection from {clients[notified_socket][data].decode("utf-8")}")
+                sockets_list.remove(notified_socket)
+                del clients[notified_socket]
+                continue
+            
+            user = clients[notified_socket]
+            print(f"Recieved Message from {user['data'].decode("utf-8")}: {message['data'].decode("utf-8")}")
