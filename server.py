@@ -28,7 +28,7 @@ def receive_message(client_socket):
         return {"header": message_header, "data": client_socket.recv(message_length)}
 
     except:
-        pass
+        return False
 
 
 while True:
@@ -39,8 +39,8 @@ while True:
             client_socket, client_address = server_socket.accept()
 
 
-            user = receive_message(client_socket)
-            if user = False:
+            user = receive_message(client_socket) 
+            if user == False:
                 continue
 
             sockets_list.append(client_socket)
@@ -52,10 +52,19 @@ while True:
             message = receive_message(notified_socket)
 
             if message is False:
-                print(f"Closed connection from {clients[notified_socket][data].decode("utf-8")}")
+                print(f"Closed connection from {clients[notified_socket][data].decode('utf-8')}")
                 sockets_list.remove(notified_socket)
                 del clients[notified_socket]
                 continue
             
             user = clients[notified_socket]
-            print(f"Recieved Message from {user['data'].decode("utf-8")}: {message['data'].decode("utf-8")}")
+
+            print(f"Recieved Message from {user['data'].decode('utf-8')}: {message['data'].decode('utf-8')}")
+
+            for client_socket in clients:
+                if client_socket != notified_socket:
+                    client_socket.send(user['header'] + user['data'] + message['header'] + message['data'])
+
+    for notified_socket in exception_sockets:
+        sockets_list.remove(notified_socket)
+        del client[notified_socket]
