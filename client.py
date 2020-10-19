@@ -8,12 +8,8 @@ IP = "127.0.0.1"
 PORT = 1234
 my_username = input("Username: ")  # ask user for their username
 
-# Create a socket
-# socket.AF_INET - address family, IPv4, some other possible are AF_INET6, AF_BLUETOOTH, AF_UNIX
-# socket.SOCK_STREAM - TCP, conection-based, socket.SOCK_DGRAM - UDP, connectionless, datagrams, socket.SOCK_RAW - raw IP packets
-client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-# Connect to a given ip and port
+client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client_socket.connect((IP, PORT))
 # Set connection to non-blocking state, so .recv() call wont block, just return some exception that we'll handle
 client_socket.setblocking(False)
@@ -25,7 +21,6 @@ username_header = f"{len(username):<{HEADER_LENGTH}}".encode('utf-8')
 client_socket.send(username_header + username)
 
 while True:
-
     # Wait for user to input a message
     message = input(f'{my_username} > ')
                 
